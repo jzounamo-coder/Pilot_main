@@ -5,8 +5,8 @@ import { useNavigation } from '@react-navigation/native';
 import * as React from 'react';
 import { useState, useEffect } from 'react'; 
 import axios from 'axios'; 
-import { useDispatch } from 'react-redux'; 
-import * as SecureStore from 'expo-secure-store'; // Ajouté pour la vérification
+import { useDispatch, useSelector } from 'react-redux'; 
+import * as SecureStore from 'expo-secure-store';
 import { addConversation } from '../redux/slices/chatslices'; 
 import PoteauxScreen, { PoteauDetailScreen } from '../screens/PoteauxScreen';
 import DemandePoteauScreen from '../screens/DemandePoteauScreen'; 
@@ -50,6 +50,10 @@ import PboFullScreen from '../screens/PboFullScreen';
 import TicketsTraites from '../screens/Listepbofull';
 import RetourTerrainPbo from '../screens/RetourTerrainPbo';
 import ListeRetoursTerrain from '../screens/ListeRetoursTerrain'; 
+import { RootState } from '../redux/store';
+
+// IMPORTATION DU MENU MODAL
+import MenuModal from '../components/MenuModal'; // Ajuste le chemin si nécessaire
 
 const PRIMARY_BLUE = '#1A237E';
 
@@ -88,6 +92,7 @@ type RootStackParamList = {
       id: string;
       nom: string;
       tel: string;
+      value: string; // Correction mineure si nécessaire, conservé selon structure
       ville: string;
       arrondissement: string;
       type: 'OE' | 'OT' | 'OD';
@@ -113,6 +118,10 @@ const CreateGroupScreen = () => {
     const [filteredContacts, setFilteredContacts] = useState<any[]>([]); 
     const [loading, setLoading] = useState(true);
     const [searchText, setSearchText] = useState('');
+
+    const { user } = useSelector((state: RootState) => state.auth);
+
+    console.log("Mapping des composants de navigation...QQQ", user);
 
     useEffect(() => {
         fetchSpeedProUsers();
@@ -263,130 +272,22 @@ const CreateGroupScreen = () => {
     );
 };
 
-const Stack = createNativeStackNavigator<RootStackParamList>();
-
-const RootNavigator = () => {
-    const [isSearching, setIsSearching] = useState(false);
-    const [searchText, setSearchText] = useState('');
-    
-    // Nouveaux états pour la navigation conditionnelle
-    const [isLoading, setIsLoading] = useState(true);
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
-
-    useEffect(() => {
-        const checkAuth = async () => {
-            try {
-                const token = await SecureStore.getItemAsync('userToken');
-                setIsAuthenticated(!!token);
-            } catch (e) {
-                setIsAuthenticated(false);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-        checkAuth();
-    }, []);
-
-    const commonHeaderOptions = ({ navigation }: any) => ({
-        headerShown: true,
-        headerStyle: { backgroundColor: PRIMARY_BLUE },
-        headerTintColor: 'white',
-        headerLeft: () => (
-            <TouchableOpacity onPress={() => navigation.goBack()} style={{ marginRight: 10 }}>
-                <Ionicons name="arrow-back" size={26} color="white" />
-            </TouchableOpacity>
-        ),
-    });
-
-    if (isLoading) {
-        return (
-            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                <ActivityIndicator size="large" color={PRIMARY_BLUE} />
-            </View>
-        );
-    }
-
-    return (
-        <Stack.Navigator screenOptions={{ headerShown: false }}>
-            {isAuthenticated ? (
-                // --- ÉCRANS PRIVÉS (Connecté) ---
-                <>
-                    <Stack.Screen 
-                        name="Root" 
-                        component={BottomTabNavigator} 
-                        options={({ navigation }) => ({
-                            headerShown: true,
-                            headerStyle: { backgroundColor: PRIMARY_BLUE },
-                            headerTintColor: 'white',
-                            headerTitle: () => isSearching ? (
-                                <TextInput placeholder="Rechercher..." style={{ color: 'white', fontSize: 18, width: width * 0.7 }} autoFocus value={searchText} onChangeText={setSearchText} />
-                            ) : (
-                                <Text style={{ color: 'white', fontSize: 20, fontWeight: 'bold' }}>Pilot</Text>
-                            ),
-                            headerRight: () => (
-                                <View style={{ flexDirection: 'row', alignItems: 'center', marginRight: 5 }}>
-                                    <TouchableOpacity style={{ padding: 10 }} onPress={() => { setIsSearching(!isSearching); if (isSearching) setSearchText(''); }}>
-                                        <Ionicons name={isSearching ? "close" : "search"} size={24} color="white" />
-                                    </TouchableOpacity>
-                                    {!isSearching && (
-                                        <TouchableOpacity style={{ padding: 10 }} onPress={() => navigation.navigate('CreateGroup')}>
-                                            <Ionicons name="people-outline" size={26} color="white" />
-                                        </TouchableOpacity>
-                                    )}
-                                </View>
-                            )
-                        })} 
-                    />
-                    <Stack.Screen name="ChatRoom" component={ChatRoomScreen} options={commonHeaderOptions} />
-                    <Stack.Screen name="TicketForm" component={TicketFormScreen} options={(props) => ({ ...commonHeaderOptions(props), title: 'Nouveau Ticket' })} />
-                    <Stack.Screen name="TicketDetail" component={TicketDetailScreen} options={(props) => ({ ...commonHeaderOptions(props), title: 'Détails du Ticket' })} />
-                    <Stack.Screen name="PboForm" component={PboFormScreen} options={(props) => ({ ...commonHeaderOptions(props), title: 'Nouveau PBO' })} />
-                    <Stack.Screen name="PboDetail" component={PboDetailScreen} options={(props) => ({ ...commonHeaderOptions(props), title: 'Fiche Technique PBO' })} />
-                    <Stack.Screen name="ClientDetail" component={ClientDetailScreen} options={(props) => ({ ...commonHeaderOptions(props), title: 'Fiche Information Client' })} />
-                    <Stack.Screen name="ClientJobDetail" component={ClientJobDetailScreen} options={(props) => ({ ...commonHeaderOptions(props), title: 'Détails de l\'intervention' })} />
-                    <Stack.Screen name="Visualisation" component={VisualisationScreen} options={(props) => ({ ...commonHeaderOptions(props), title: 'Photos de l\'intervention' })} />
-                    <Stack.Screen name="Map" component={MapScreen} options={(props) => ({ ...commonHeaderOptions(props), title: 'Géolocalisation PBO' })} />
-                    <Stack.Screen name="SummaryScreen" component={SummaryScreen} options={(props) => ({ ...commonHeaderOptions(props), title: 'Récapitulatif' })}/>
-                    <Stack.Screen name="ContactPicker" component={ContactPickerScreen} options={(props) => ({ ...commonHeaderOptions(props), title: 'Sélectionner un contact' })} />
-                    <Stack.Screen name="RenseignerPoteau" component={RenseignerPoteauScreen} options={{ title: 'Renseigner un poteau' }} />
-                    <Stack.Screen name="DemandePoteau" component={DemandePoteauScreen} options={(props) => ({ ...commonHeaderOptions(props), title: 'Demande de Poteau'})} />
-                    <Stack.Screen name="CreateGroup" component={CreateGroupScreen} options={{ headerShown: false }} />
-                    <Stack.Screen name="PoteauDetail" component={PoteauDetailScreen} options={(props) => ({ ...commonHeaderOptions(props), title: 'Détails du Poteau' })} />
-                    <Stack.Screen name="Installations" component={InstallationsScreen} options={(props) => ({ ...commonHeaderOptions(props), title: 'Installations Fibre' })} />
-                    <Stack.Screen name="ValidationInstallation" component={ValidationInstallationScreen} options={(props) => ({ ...commonHeaderOptions(props), title: 'Validation Chantier' })} />
-                    <Stack.Screen name="PboFull" component={PboFullScreen} options={(props) => ({ ...commonHeaderOptions(props), title: 'PBO Full' })} />
-                    <Stack.Screen name="TicketsTraites" component={TicketsTraites} options={(props) => ({ ...commonHeaderOptions(props), title: 'PBO Traités' })} />
-                    <Stack.Screen name="RetourTerrainPbo" component={RetourTerrainPbo} options={(props) => ({ ...commonHeaderOptions(props), title: 'Saturation' })} />
-                    <Stack.Screen name="ListeRetoursTerrain" component={ListeRetoursTerrain} options={{ headerShown: false }} />
-                    <Stack.Screen name="DemandeCreation" component={DemandeCreationScreen} options={{ headerShown: false }} />
-                    <Stack.Screen name="NouvelleDemande" component={NouvelleDemandeScreen} options={{ headerShown: false }} />
-                </>
-            ) : (
-                // --- ÉCRANS PUBLICS (Déconnecté) ---
-                <>
-                    <Stack.Screen name="Login" component={LoginScreen} />
-                    <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
-                    <Stack.Screen name="OTP" component={OTPScreen} />
-                    <Stack.Screen name="ResetPassword" component={ResetPasswordScreen} />
-                </>
-            )}
-        </Stack.Navigator>
-    );
-}
-
 const TopTab = createMaterialTopTabNavigator();
 
 const menuList = [
-  { label: 'Discussion', component: TabOneScreen, restrict: true },
-  { label: 'Ticket', component: StatusScreen, restrict: true },
-  { label: 'PBO', component: TabTwoScreen, restrict: true },
-  { label: 'OE/OT/OD', component: OEOTODlScreen, restrict: true },
-  { label: 'Installation', component: InstallationsScreen, restrict: true },
-  { label: 'Poteaux', component: PoteauxScreen, restrict: true },
-  { label: 'PBO Full', component: PboFullScreen, restrict: true },
-  { label: 'Retour terrain', component: RetourTerrainPbo, restrict: true },
-  { label: 'Demande Création', component: DemandeCreationScreen, restrict: true },
+    { label: 'Discussion',       component: TabOneScreen,          restrict: true },
+    { label: 'Ticket',           component: StatusScreen,          restrict: true },
+    { label: 'PBO',              component: TabTwoScreen,          restrict: true },
+    { label: 'OE/OT/OD',        component: OEOTODlScreen,         restrict: true },
+    { label: 'Installation',     component: InstallationsScreen,   restrict: true },
+    { label: 'Poteaux',          component: PoteauxScreen,         restrict: true },
+    { label: 'PBO Full',         component: PboFullScreen,         restrict: true },
+    { label: 'Retour terrain',   component: RetourTerrainPbo,      restrict: true },
+    { label: 'Demande Création', component: DemandeCreationScreen, restrict: true },
 ];
+
+//*const { user } = useSelector((state: RootState) => state.auth);
+//console.log("user-3333333", user)
 
 const BottomTabNavigator = () => {
     const nAfficherQueTroisPages = true; 
@@ -413,7 +314,253 @@ const BottomTabNavigator = () => {
             ))}
         </TopTab.Navigator>
     );
-}
+};
+
+// MAPPING string → composant réel (hors composant pour éviter les re-créations)
+
+const SCREEN_COMPONENTS: Record<string, React.ComponentType<any>> = {
+  BottomTabNavigator,   
+  ChatRoomScreen,
+  TicketFormScreen,
+  TicketDetailScreen,
+  PboFormScreen,
+  PboDetailScreen,
+  ClientDetailScreen,
+  ClientJobDetailScreen,
+  VisualisationScreen,
+  MapScreen,
+  SummaryScreen,
+  ContactPickerScreen,
+  RenseignerPoteauScreen,
+  DemandePoteauScreen,
+  CreateGroupScreen,
+  PoteauDetailScreen,
+  InstallationsScreen,
+  ValidationInstallationScreen,
+  PboFullScreen,
+  TicketsTraites,
+  RetourTerrainPbo,
+  ListeRetoursTerrain,
+  DemandeCreationScreen,
+  NouvelleDemandeScreen,
+};
+
+// CONFIG DES ÉCRANS (hors composant — statique)
+type ScreenConfig = {
+  name: string;
+  component: string;
+  headerShown: boolean;
+  title: string | null;
+  headerCustom?: boolean;
+};
+console.log("Configuration des écrans de navigation...");
+let MENU_SCREENS: ScreenConfig[] = [
+  { name: 'Root',                   component: 'BottomTabNavigator',          headerShown: true,  title: null,                        headerCustom: true },
+  { name: 'ChatRoom',               component: 'ChatRoomScreen',              headerShown: true,  title: null },
+  { name: 'TicketForm',             component: 'TicketFormScreen',            headerShown: true,  title: 'Nouveau Ticket' },
+  { name: 'TicketDetail',           component: 'TicketDetailScreen',          headerShown: true,  title: 'Détails du Ticket' },
+  { name: 'PboForm',                component: 'PboFormScreen',               headerShown: true,  title: 'Nouveau PBO' },
+  { name: 'PboDetail',              component: 'PboDetailScreen',             headerShown: true,  title: 'Fiche Technique PBO' },
+  { name: 'ClientDetail',           component: 'ClientDetailScreen',          headerShown: true,  title: 'Fiche Information Client' },
+  { name: 'ClientJobDetail',        component: 'ClientJobDetailScreen',       headerShown: true,  title: "Détails de l'intervention" },
+  { name: 'Visualisation',          component: 'VisualisationScreen',         headerShown: true,  title: "Photos de l'intervention" },
+  { name: 'Map',                    component: 'MapScreen',                   headerShown: true,  title: 'Géolocalisation PBO' },
+  { name: 'SummaryScreen',          component: 'SummaryScreen',               headerShown: true,  title: 'Récapitulatif' },
+  { name: 'ContactPicker',          component: 'ContactPickerScreen',         headerShown: true,  title: 'Sélectionner un contact' },
+  { name: 'RenseignerPoteau',       component: 'RenseignerPoteauScreen',      headerShown: true,  title: 'Renseigner un poteau' },
+  { name: 'DemandePoteau',          component: 'DemandePoteauScreen',         headerShown: true,  title: 'Demande de Poteau' },
+  { name: 'CreateGroup',            component: 'CreateGroupScreen',           headerShown: false, title: null },
+  { name: 'PoteauDetail',           component: 'PoteauDetailScreen',          headerShown: true,  title: 'Détails du Poteau' },
+  { name: 'Installations',          component: 'InstallationsScreen',         headerShown: true,  title: 'Installations Fibre' },
+  { name: 'ValidationInstallation', component: 'ValidationInstallationScreen',headerShown: true,  title: 'Validation Chantier' },
+  { name: 'PboFull',                component: 'PboFullScreen',               headerShown: true,  title: 'PBO Full' },
+  { name: 'TicketsTraites',         component: 'TicketsTraites',              headerShown: true,  title: 'PBO Traités' },
+  { name: 'RetourTerrainPbo',       component: 'RetourTerrainPbo',            headerShown: true,  title: 'Saturation' },
+  { name: 'ListeRetoursTerrain',    component: 'ListeRetoursTerrain',         headerShown: false, title: null },
+  { name: 'DemandeCreation',        component: 'DemandeCreationScreen',       headerShown: false, title: null },
+  { name: 'NouvelleDemande',        component: 'NouvelleDemandeScreen',       headerShown: false, title: null },
+];
+
+MENU_SCREENS = []
+
+// STACK + NAVIGATEUR PRINCIPAL
+const Stack = createNativeStackNavigator<RootStackParamList>();
+const RootNavigator = () => {
+    const [isSearching, setIsSearching] = useState(false);
+    const [searchText, setSearchText] = useState('');
+    const [isLoading, setIsLoading] = useState(true);
+    // On initialise isAuthenticated à false, mais il sera écrasé soit par SecureStore soit par Redux
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
+    
+    // NOUVEAUX ÉTATS POUR LA MODALE MENU
+    const [isMenuVisible, setIsMenuVisible] = useState(false);
+    const navigationRef = React.useRef<any>(null);
+
+    // Récupération de l'utilisateur depuis Redux (si disponible)
+    // On suppose que l'authentification est gérée par token/user
+    const { user, token } = useSelector((state: RootState) => state.auth);
+
+    useEffect(() => {
+        console.log("--- Changement d'état Redux (Auth) ---");
+        if (user) {
+            console.log("Utilisateur connecté :", user.edl);
+            console.log("Utilisateur connecté :", user.partenaire);
+        } else {
+            console.log("Aucun utilisateur dans le store Redux.");
+        }
+    }, [user]); 
+
+    useEffect(() => {
+        const checkAuth = async () => {
+            try {
+                // On vérifie d'abord SecureStore
+                const storedToken = await SecureStore.getItemAsync('userToken');
+                // Si on a un token en local OU dans Redux, on est authentifié
+                setIsAuthenticated(!!storedToken || !!token);
+            } catch (e) {
+                console.error("Erreur lecture SecureStore:", e);
+                // En cas d'erreur locale, on se fie au store Redux s'il y a un token
+                setIsAuthenticated(!!token);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        checkAuth();
+    }, [token]); // Le hook se déclenche aussi quand le token Redux change
+
+    // LOGIQUE DE DÉCONNEXION POUR LE MENU
+    const handleLogout = async () => {
+        setIsMenuVisible(false);
+        try {
+            await SecureStore.deleteItemAsync('userToken');
+            // L'état isAuthenticated passe à false, le rendu conditionnel affiche le Login
+            setIsAuthenticated(false); 
+        } catch (e) {
+            console.error("Erreur de déconnexion:", e);
+        }
+    };
+
+    const commonHeaderOptions = ({ navigation }: any) => ({
+        headerShown: true,
+        headerStyle: { backgroundColor: PRIMARY_BLUE },
+        headerTintColor: 'white',
+        headerLeft: () => (
+            <TouchableOpacity onPress={() => navigation.goBack()} style={{ marginRight: 10 }}>
+                <Ionicons name="arrow-back" size={26} color="white" />
+            </TouchableOpacity>
+        ),
+    });
+
+    if (isLoading) {
+        return (
+            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                <ActivityIndicator size="large" color={PRIMARY_BLUE} />
+            </View>
+        );
+    }
+
+    return (
+        <View style={{ flex: 1 }}>
+            {/* LA CORRECTION EST ICI : 
+              On utilise la navigation conditionnelle standard de React Navigation.
+              Si isAuthenticated = vrai -> On rend l'App (Root).
+              Si isAuthenticated = faux -> On rend l'Auth (Login).
+              Il n'y a plus de composant LoginScreen quand l'utilisateur est connecté,
+              donc plus d'erreur REPLACE.
+            */}
+            <Stack.Navigator screenOptions={{ headerShown: false }}>
+                {isAuthenticated ? (
+                    <>
+                        {/* L'écran racine (Root) */}
+                        <Stack.Screen
+                            name="Root"
+                            component={BottomTabNavigator}
+                            options={({ navigation }: any) => {
+                                navigationRef.current = navigation;
+                                
+                                return {
+                                    headerShown: true,
+                                    headerStyle: { backgroundColor: PRIMARY_BLUE },
+                                    headerTintColor: 'white',
+                                    headerTitle: () => isSearching ? (
+                                        <TextInput
+                                            placeholder="Rechercher..."
+                                            style={{ color: 'white', fontSize: 18, width: width * 0.7 }}
+                                            autoFocus
+                                            value={searchText}
+                                            onChangeText={setSearchText}
+                                        />
+                                    ) : (
+                                        <Text style={{ color: 'white', fontSize: 20, fontWeight: 'bold' }}>Pilot</Text>
+                                    ),
+                                    headerRight: () => (
+                                        <View style={{ flexDirection: 'row', alignItems: 'center', marginRight: 5 }}>
+                                            <TouchableOpacity
+                                                style={{ padding: 10 }}
+                                                onPress={() => { setIsSearching(!isSearching); if (isSearching) setSearchText(''); }}
+                                            >
+                                                <Ionicons name={isSearching ? "close" : "search"} size={24} color="white" />
+                                            </TouchableOpacity>
+                                            {!isSearching && (
+                                                <TouchableOpacity style={{ padding: 10 }} onPress={() => setIsMenuVisible(true)}>
+                                                    <Ionicons name="ellipsis-vertical" size={24} color="white" />
+                                                </TouchableOpacity>
+                                            )}
+                                        </View>
+                                    ),
+                                };
+                            }}
+                        />
+
+                        {/* Tous les autres écrans de l'app */}
+                        {MENU_SCREENS.filter(s => s.name !== 'Root').map(({ name, component, headerShown, title }) => {
+                            const Component = SCREEN_COMPONENTS[component];
+                            if (!Component) return null;
+
+                            return (
+                                <Stack.Screen
+                                    key={name}
+                                    name={name as any}
+                                    component={Component}
+                                    options={
+                                        !headerShown
+                                            ? { headerShown: false }
+                                            : title
+                                            ? (props: any) => ({ ...commonHeaderOptions(props), title })
+                                            : commonHeaderOptions
+                                    }
+                                />
+                            );
+                        })}
+                    </>
+                ) : (
+                    // La pile Auth n'est rendue QUE si isAuthenticated est false
+                    <>
+                        <Stack.Screen name="Login" component={LoginScreen} />
+                        <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
+                        <Stack.Screen name="OTP" component={OTPScreen} />
+                        <Stack.Screen name="ResetPassword" component={ResetPasswordScreen} />
+                    </>
+                )}
+            </Stack.Navigator>
+
+            {/* INTEGRATION COMPOSANT VISUEL MENU MODAL */}
+            <MenuModal 
+                isVisible={isMenuVisible}
+                onClose={() => setIsMenuVisible(false)}
+                onLogout={handleLogout}
+                onNavigateCreate={() => {
+                    setIsMenuVisible(false);
+                    navigationRef.current?.navigate('PboFull');
+                }}
+                onNavigateCreateGroup={() => {
+                    setIsMenuVisible(false);
+                    navigationRef.current?.navigate('CreateGroup');
+                }}
+            />
+        </View>
+    );
+};
 
 const styles = StyleSheet.create({
     groupHeader: { paddingTop: 50, paddingBottom: 15, paddingHorizontal: 15, flexDirection: 'row', alignItems: 'center' },

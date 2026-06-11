@@ -48,9 +48,11 @@ export const loginUser = createAsyncThunk(
 
       //  Chiffrement et stockage du token 
       await SecureStore.setItemAsync('userToken', data.token);
+      await SecureStore.setItemAsync('user', JSON.stringify(data.data));
 
       return data; 
-    } catch (error) {
+    } catch (error:any) {
+      console.error("Erreur lors de la connexion :", error.message );
       return thunkAPI.rejectWithValue('Erreur réseau : impossible de joindre le serveur');
     }
   }

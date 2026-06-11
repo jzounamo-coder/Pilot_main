@@ -16,57 +16,81 @@ const { width, height } = Dimensions.get('window');
 const MAIN_BLUE = '#1A237E';
   
 const LoginScreen = ({ navigation }: any) => {
-  const [email, setEmail] = useState('smile.mbambi@congotelecom.cg');
-  const [password, setPassword] = useState('admin');
+  const [email, setEmail] = useState('dis.wortis2@gmail.com');
+  const [password, setPassword] = useState('12345');
 
   // --- LOGIQUE REDUX ---
   const dispatch = useDispatch<AppDispatch>();
-  const { loading, error, token, role } = useSelector((state: RootState) => state.auth);
+  const { loading, error, token, user, role } = useSelector((state: RootState) => state.auth);
+
+  // 1. SURVEILLANCE DE L'ÉTAT REDUX AUTH EN TEMPS RÉEL
+  useEffect(() => {
+    console.log("==================================================");
+    console.log("🔄 [ÉCOUTEUR REDUX] L'état de l'authentification a changé :");
+    console.log("➡️ loading :", loading);
+    console.log("➡️ error   :", error || "Aucune erreur");
+    console.log("➡️ token   :", token ? `Reçu (Tronqué : ${token.substring(0, 15)}...)` : "Aucun token");
+    console.log("==================================================");
+  }, [loading, error, token, user, role]);
 
   // CHARGEMENT DE L'EMAIL SAUVEGARDÉ AU DÉMARRAGE
   useEffect(() => {
     const checkSavedUser = async () => {
+      console.log(" [DÉMARRAGE] Vérification d'un email sauvegardé...");
       const savedEmail = await AsyncStorage.getItem('userEmail');
-      if (savedEmail) setEmail(savedEmail);
+      if (savedEmail) {
+        console.log(" [DÉMARRAGE] Email trouvé et pré-rempli :", savedEmail);
+        setEmail(savedEmail);
+      } else {
+        console.log(" [DÉMARRAGE] Aucun email en mémoire.");
+      }
     };
     checkSavedUser();
   }, []);
 
+  // 2. SURVEILLANCE DE LA RÉUSSITE DE LA CONNEXION (TOKEN)
   useEffect(() => {
     const saveSession = async () => {
       if (token) {
-        await AsyncStorage.setItem('userEmail', email.trim());
-        
-        await SecureStore.setItemAsync('userToken', token);
-        
-        if (role === 'PILOT') {
-          navigation.replace('Root'); 
-        } else {
-          navigation.replace('Root'); 
+        console.log(" [SESSION] Un token valide est détecté, écriture en mémoire...");
+        try {
+          await AsyncStorage.setItem('userEmail', email.trim());
+          await SecureStore.setItemAsync('userToken', token);
+          console.log(" [SESSION] Stockage local réussi.");
+          
+          /* NOTE ARCHITECTURE : Ton fichier Navigation.tsx gère déjà le basculement automatique 
+            dès que le token arrive dans Redux. Faire un .replace() ici va faire crasher l'application.
+            Laisse Redux et la navigation conditionnelle s'en charger !
+          */
+          console.log(" [NAVIGATION] Le fichier Navigation.tsx va t'ouvrir l'application automatiquement.");
+        } catch (e) {
+          console.error(" [SESSION] Échec de la sauvegarde locale :", e);
         }
-        return;
       }
     };
     saveSession();
   }, [token, role]);
 
+  // 3. SURVEILLANCE ET AFFICHAGE DES ERREURS API
   useEffect(() => {
     if (error) {
+      console.error(" [ALERTE ERREUR ERGONOMIQUE] Affichage de la boîte de dialogue :", error);
       Alert.alert("Erreur de connexion", error);
     }
   }, [error]);
 
   const handleLogin = () => {
+    console.log(" [ACTION] Clic sur le bouton 'SE CONNECTER'");
     if (!email || !password) {
+      console.warn(" [VALIDATION] Saisie incomplète : Email ou Mot de passe vide.");
       Alert.alert("Champs manquants", "Veuillez entrer vos identifiants.");
       return;
     }
 
+    console.log(` [REQUÊTE] Dispatch de loginUser pour : ${email.trim()}`);
     // On lance l'action Redux (qui gère le fetch en interne)
     dispatch(loginUser({ email: email.trim(), password: password }));
   };
-
-  
 
   return (
     <SafeAreaView style={styles.container}>
