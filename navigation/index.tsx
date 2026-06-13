@@ -8,49 +8,48 @@ import axios from 'axios';
 import { useDispatch, useSelector } from 'react-redux'; 
 import * as SecureStore from 'expo-secure-store';
 import { addConversation } from '../redux/slices/chatslices'; 
-import PoteauxScreen, { PoteauDetailScreen } from '../screens/PoteauxScreen';
-import DemandePoteauScreen from '../screens/DemandePoteauScreen'; 
-import RenseignerPoteauScreen from '../screens/RenseignerPoteauScreen';
-import DemandeCreationScreen from '../screens/DemandeCreationScreen';
-import NouvelleDemandeScreen from '../screens/NouvelleDemandeScreen';
-
+import PoteauxScreen, { PoteauDetailScreen } from '../screens/Poteaux/PoteauxScreen';
+import DemandePoteauScreen from '../screens/demandePoteau/DemandePoteauScreen'; 
+import RenseignerPoteauScreen from '../screens/RenseignerPoteau/RenseignerPoteau.screen';
+import DemandeCreationScreen from '../screens/demandecreation/DemandeCreation.screen';
+import NouvelleDemandeScreen from '../screens/NouvelleDemandeScreen/NouvelleDemandeScreen';
 import { ColorSchemeName, Dimensions, Text, TouchableOpacity, View, StyleSheet, TextInput, FlatList, Alert, ActivityIndicator } from 'react-native'; 
-
 import Colors from '../constants/Colors';
-import TabOneScreen from '../screens/ChatsScreen';
-import TabTwoScreen from '../screens/ListepboScreen';
-import ChatRoomScreen from '../screens/ChatRoomScreen';
-import StatusScreen from '../screens/StatusScreen';
-import TicketFormScreen from '../screens/TicketFormScreen';
-import TicketDetailScreen from '../screens/TicketDetailScreen';
-import MapScreen from '../screens/MapScreen'; 
-import ContactPickerScreen from '../screens/ContactPickerScreen'; 
+import TabOneScreen from '../screens/chat/chatScreen.screen';
+import TabTwoScreen from '../screens/PboList/TabTwoScreen';
+import ChatRoomScreen from '../screens/ChatRoom/ChatRoom.screen';
+import StatusScreen from '../screens/Status/Status.screen';
+import TicketFormScreen from '../screens/TicketForm/TicketForm.screen';
+import TicketDetailScreen from '../screens/TicketDetail/TicketDetail.screen';
+import MapScreen from '../screens/MapScreen/MapScreen'; 
+import ContactPickerScreen from '../screens/ContactPicker/ContactPicker.screen'; 
 
 // IMPORTS AUTHENTIFICATION
-import LoginScreen from '../screens/auth/LoginScreen';
-import ForgotPasswordScreen from '../screens/auth/ForgotPasswordScreen';
-import OTPScreen from '../screens/auth/OTPScreen';
-import ResetPasswordScreen from '../screens/auth/ResetPasswordScreen';
+import LoginScreen from '../screens/auth/Login/Login.screen';
+import ForgotPasswordScreen from '../screens/auth/ForgotPassword/ForgotPassword.screen';
+import OTPScreen from '../screens/auth/OTP/OTP.screen';
+import ResetPasswordScreen from '../screens/auth/ResetPassword/ResetPassword.screen';
 
 // IMPORTS PBO
-import PboFormScreen from '../screens/pboFormScreen'; 
-import PboDetailScreen from '../screens/pboDetailScreen';
+import PboFormScreen from '../screens/PboForm/PboForm.screen'; 
+import PboDetailScreen from '../screens/pboDetail/PboDetailScreen';
 
-// IMPORT DÉTAIL CLIENT
-import ClientDetailScreen from '../screens/ClientDetailScreen';
+// IMPORT CLIENT
+import ClientDetailScreen from '../screens/client/ClientDetailScreen.screen';
 
 // NOUVELLES IMPORTATIONS
-import OEOTODlScreen from '../screens/OEOTODlScreen';
-import ClientJobDetailScreen from '../screens/ClientJobDetailScreen';
-import VisualisationScreen from '../screens/VisualisationScreen';
-import SummaryScreen from '../screens/SummaryScreen'; 
-import InstallationsScreen from '../screens/InstallationsScreen';
-import ValidationInstallationScreen from '../screens/ValidationInstallationScreen';
-import PboFullScreen from '../screens/PboFullScreen';
-import TicketsTraites from '../screens/Listepbofull';
-import RetourTerrainPbo from '../screens/RetourTerrainPbo';
-import ListeRetoursTerrain from '../screens/ListeRetoursTerrain'; 
+import OEOTODlScreen from '../screens/OEOTOD/OEOTODScreen';
+import ClientJobDetailScreen from '../screens/ClientJobDetail/ClientJobDetail.screen';
+import VisualisationScreen from '../screens/Visualisation/Visualisation.screen';
+import SummaryScreen from '../screens/Summary/Summary.screen'; 
+import InstallationsScreen from '../screens/installations/InstallationsScreen';
+import ValidationInstallationScreen from '../screens/ValidationInstallation/ValidationInstallation.screen';
+import PboFullScreen from '../screens/PboFull/PboFullScreen';
+import TicketsTraites from '../screens/TicketsTraites/TicketsTraites.Screen';
+import RetourTerrainPbo from '../screens/RetourTerrainPbo/RetourTerrainPbo.screen';
+import ListeRetoursTerrain from '../screens/listeRetoursTerrain/ListeRetoursTerrain.Screen'; 
 import { RootState } from '../redux/store';
+import CreateGroupScreen from '../screens/CreateGroup/CreateGroup.screen';
 
 // IMPORTATION DU MENU MODAL
 import MenuModal from '../components/MenuModal'; // Ajuste le chemin si nécessaire
@@ -109,169 +108,6 @@ export default function Navigation({ colorScheme }: { colorScheme: ColorSchemeNa
     return <RootNavigator />;
 }
 
-// --- ÉCRAN DE CRÉATION DE GROUPE ---
-const CreateGroupScreen = () => {
-    const navigation = useNavigation<any>();
-    const dispatch = useDispatch();
-    const [groupName, setGroupName] = useState('');
-    const [contacts, setContacts] = useState<any[]>([]);
-    const [filteredContacts, setFilteredContacts] = useState<any[]>([]); 
-    const [loading, setLoading] = useState(true);
-    const [searchText, setSearchText] = useState('');
-
-    const { user } = useSelector((state: RootState) => state.auth);
-
-    console.log("Mapping des composants de navigation...QQQ", user);
-
-    useEffect(() => {
-        fetchSpeedProUsers();
-    }, []);
-
-    const fetchSpeedProUsers = async () => {
-        try {
-            const response = await axios.get('https://control-api1.speedpro.cg/api/v1/dry/dry-user');
-            const rawData = response.data.data || [];
-            
-            const formatted = rawData.map((u: any) => ({
-                id: u._id || u.id,
-                name: u.person?.label || u.label || "Utilisateur SpeedPro",
-                number: u.person?.phone || u.phone || "Pas de numéro",
-                selected: false 
-            })).sort((a: any, b: any) => a.name.localeCompare(b.name));
-
-            setContacts(formatted);
-            setFilteredContacts(formatted);
-        } catch (error) {
-            console.error("Erreur API SpeedPro:", error);
-            Alert.alert("Erreur", "Impossible de charger les utilisateurs.");
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleSearch = (text: string) => {
-        setSearchText(text);
-        const filtered = contacts.filter(c => 
-            c.name.toLowerCase().includes(text.toLowerCase()) || 
-            c.number.includes(text)
-        );
-        setFilteredContacts(filtered);
-    };
-
-    const handleBackWithAlert = () => {
-        const isNameFilled = groupName.trim().length > 0;
-        const isMemberSelected = contacts.some((c: any) => c.selected === true);
-        if (isNameFilled || isMemberSelected) {
-            Alert.alert("Abandonner ?", "Voulez-vous vraiment annuler ?", [
-                { text: "ANNULER", style: "cancel" },
-                { text: "ABANDONNER", style: "destructive", onPress: () => navigation.goBack()}
-            ]);
-        } else { 
-            navigation.goBack(); 
-        }
-    };
-
-    const handleConfirmCreate = () => {
-        if (!groupName.trim()) { 
-            Alert.alert("Nom manquant", "Entrez un nom pour le groupe."); 
-            return; 
-        }
-        
-        const selectedMembers = contacts.filter(c => c.selected);
-        if (selectedMembers.length === 0) {
-            Alert.alert("Membres manquants", "Sélectionnez au moins un participant.");
-            return;
-        }
-
-        const newGroupData = { 
-            id: `group_${Date.now()}`, 
-            name: groupName, 
-            isGroup: true,
-            members: selectedMembers,
-            lastMessage: { 
-                content: `Groupe "${groupName}" créé`, 
-                createdAt: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) 
-            }, 
-            imageUri: 'https://static.vecteezy.com/ti/vecteur-libre/p1/26019617-groupe-profil-avatar-icone-vecteur-defaut-social-medias-forum-profil-photo-vectoriel.jpg' 
-        };
-
-        dispatch(addConversation(newGroupData));
-
-        navigation.reset({
-            index: 0,
-            routes: [{ name: 'Root', params: { screen: 'Discussion', params: { newChat: newGroupData } } }],
-        });
-    };
-
-    return (
-        <View style={{ flex: 1, backgroundColor: 'white' }}>
-            <View style={[styles.groupHeader, { backgroundColor: PRIMARY_BLUE }]}>
-                <TouchableOpacity onPress={handleBackWithAlert} style={{ marginRight: 20 }}>
-                    <Ionicons name="arrow-back" size={28} color="white" />
-                </TouchableOpacity>
-                <View>
-                    <Text style={{ color: 'white', fontSize: 20, fontWeight: 'bold' }}>Nouveau groupe</Text>
-                    <Text style={{ color: 'white', fontSize: 14 }}>
-                        {loading ? 'Chargement...' : `${contacts.length} utilisateurs SpeedPro`}
-                    </Text>
-                </View>
-            </View>
-
-            <View style={{ padding: 15 }}>
-                <TextInput 
-                    placeholder="Nom du groupe..." 
-                    style={{ fontSize: 18, borderBottomWidth: 1.5, borderBottomColor: PRIMARY_BLUE, paddingBottom: 5, marginBottom: 15 }} 
-                    value={groupName} 
-                    onChangeText={setGroupName} 
-                />
-                <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#f0f0f0', borderRadius: 8, paddingHorizontal: 10 }}>
-                    <Ionicons name="search" size={20} color="gray" />
-                    <TextInput 
-                        placeholder="Rechercher un membre..." 
-                        style={{ flex: 1, padding: 10 }} 
-                        value={searchText}
-                        onChangeText={handleSearch}
-                    />
-                </View>
-            </View>
-
-            {loading ? (
-                <View style={{flex: 1, justifyContent: 'center'}}><ActivityIndicator color={PRIMARY_BLUE} size="large" /></View>
-            ) : (
-                <FlatList 
-                    data={filteredContacts} 
-                    keyExtractor={(item) => item.id} 
-                    renderItem={({ item }) => (
-                    <TouchableOpacity 
-                        onPress={() => {
-                            const newContacts = contacts.map(c => c.id === item.id ? {...c, selected: !c.selected} : c);
-                            setContacts(newContacts);
-                            setFilteredContacts(filteredContacts.map(c => c.id === item.id ? {...c, selected: !c.selected} : c));
-                        }} 
-                        style={[styles.contactItem, item.selected && { backgroundColor: '#E8EAF6' }]}
-                    >
-                        <View style={[styles.avatarBase, { backgroundColor: item.selected ? PRIMARY_BLUE : '#ccc' }]}>
-                            {item.selected ? (
-                                <Ionicons name="checkmark" size={24} color="white" />
-                            ) : (
-                                <Text style={{color: 'white', fontWeight: 'bold'}}>{item.name[0].toUpperCase()}</Text>
-                            )}
-                        </View>
-                        <View style={{flex: 1}}>
-                            <Text style={{ fontSize: 16, fontWeight: item.selected ? 'bold' : 'normal' }}>{item.name}</Text>
-                            <Text style={{ fontSize: 12, color: '#666' }}>{item.number}</Text>
-                        </View>
-                    </TouchableOpacity>
-                )} />
-            )}
-
-            <TouchableOpacity style={[styles.fab, { backgroundColor: PRIMARY_BLUE }]} onPress={handleConfirmCreate}>
-                <Ionicons name="checkmark-done" size={30} color="white" />
-            </TouchableOpacity>
-        </View>
-    );
-};
-
 const TopTab = createMaterialTopTabNavigator();
 
 const menuList = [
@@ -317,7 +153,6 @@ const BottomTabNavigator = () => {
 };
 
 // MAPPING string → composant réel (hors composant pour éviter les re-créations)
-
 const SCREEN_COMPONENTS: Record<string, React.ComponentType<any>> = {
   BottomTabNavigator,   
   ChatRoomScreen,
@@ -333,7 +168,6 @@ const SCREEN_COMPONENTS: Record<string, React.ComponentType<any>> = {
   ContactPickerScreen,
   RenseignerPoteauScreen,
   DemandePoteauScreen,
-  CreateGroupScreen,
   PoteauDetailScreen,
   InstallationsScreen,
   ValidationInstallationScreen,
@@ -343,6 +177,7 @@ const SCREEN_COMPONENTS: Record<string, React.ComponentType<any>> = {
   ListeRetoursTerrain,
   DemandeCreationScreen,
   NouvelleDemandeScreen,
+  CreateGroupScreen, // Ajouté ici pour faire le lien avec MENU_SCREENS
 };
 
 // CONFIG DES ÉCRANS (hors composant — statique)
@@ -381,23 +216,17 @@ let MENU_SCREENS: ScreenConfig[] = [
   { name: 'NouvelleDemande',        component: 'NouvelleDemandeScreen',       headerShown: false, title: null },
 ];
 
-MENU_SCREENS = []
-
 // STACK + NAVIGATEUR PRINCIPAL
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const RootNavigator = () => {
     const [isSearching, setIsSearching] = useState(false);
     const [searchText, setSearchText] = useState('');
     const [isLoading, setIsLoading] = useState(true);
-    // On initialise isAuthenticated à false, mais il sera écrasé soit par SecureStore soit par Redux
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     
-    // NOUVEAUX ÉTATS POUR LA MODALE MENU
     const [isMenuVisible, setIsMenuVisible] = useState(false);
     const navigationRef = React.useRef<any>(null);
 
-    // Récupération de l'utilisateur depuis Redux (si disponible)
-    // On suppose que l'authentification est gérée par token/user
     const { user, token } = useSelector((state: RootState) => state.auth);
 
     useEffect(() => {
@@ -413,27 +242,22 @@ const RootNavigator = () => {
     useEffect(() => {
         const checkAuth = async () => {
             try {
-                // On vérifie d'abord SecureStore
                 const storedToken = await SecureStore.getItemAsync('userToken');
-                // Si on a un token en local OU dans Redux, on est authentifié
                 setIsAuthenticated(!!storedToken || !!token);
             } catch (e) {
                 console.error("Erreur lecture SecureStore:", e);
-                // En cas d'erreur locale, on se fie au store Redux s'il y a un token
                 setIsAuthenticated(!!token);
             } finally {
                 setIsLoading(false);
             }
         };
         checkAuth();
-    }, [token]); // Le hook se déclenche aussi quand le token Redux change
+    }, [token]);
 
-    // LOGIQUE DE DÉCONNEXION POUR LE MENU
     const handleLogout = async () => {
         setIsMenuVisible(false);
         try {
             await SecureStore.deleteItemAsync('userToken');
-            // L'état isAuthenticated passe à false, le rendu conditionnel affiche le Login
             setIsAuthenticated(false); 
         } catch (e) {
             console.error("Erreur de déconnexion:", e);
@@ -461,17 +285,9 @@ const RootNavigator = () => {
 
     return (
         <View style={{ flex: 1 }}>
-            {/* LA CORRECTION EST ICI : 
-              On utilise la navigation conditionnelle standard de React Navigation.
-              Si isAuthenticated = vrai -> On rend l'App (Root).
-              Si isAuthenticated = faux -> On rend l'Auth (Login).
-              Il n'y a plus de composant LoginScreen quand l'utilisateur est connecté,
-              donc plus d'erreur REPLACE.
-            */}
             <Stack.Navigator screenOptions={{ headerShown: false }}>
                 {isAuthenticated ? (
                     <>
-                        {/* L'écran racine (Root) */}
                         <Stack.Screen
                             name="Root"
                             component={BottomTabNavigator}
@@ -512,7 +328,6 @@ const RootNavigator = () => {
                             }}
                         />
 
-                        {/* Tous les autres écrans de l'app */}
                         {MENU_SCREENS.filter(s => s.name !== 'Root').map(({ name, component, headerShown, title }) => {
                             const Component = SCREEN_COMPONENTS[component];
                             if (!Component) return null;
@@ -534,7 +349,6 @@ const RootNavigator = () => {
                         })}
                     </>
                 ) : (
-                    // La pile Auth n'est rendue QUE si isAuthenticated est false
                     <>
                         <Stack.Screen name="Login" component={LoginScreen} />
                         <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
@@ -544,7 +358,6 @@ const RootNavigator = () => {
                 )}
             </Stack.Navigator>
 
-            {/* INTEGRATION COMPOSANT VISUEL MENU MODAL */}
             <MenuModal 
                 isVisible={isMenuVisible}
                 onClose={() => setIsMenuVisible(false)}

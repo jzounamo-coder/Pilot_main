@@ -19,10 +19,10 @@ import useCachedResources from './hooks/useCachedResources';
 import useColorScheme from './hooks/useColorScheme';
 
 //  IMPORTS DES ÉCRANS AUTH 
-import LoginScreen from './screens/auth/LoginScreen'; 
-import ForgotPasswordScreen from './screens/auth/ForgotPasswordScreen';
-import OTPScreen from './screens/auth/OTPScreen';                     
-import ResetPasswordScreen from './screens/auth/ResetPasswordScreen'; 
+import LoginScreen from './screens/auth/Login/Login.screen'; 
+import ForgotPasswordScreen from './screens/auth/ForgotPassword/ForgotPassword.screen';
+import OTPScreen from './screens/auth/OTP/OTP.screen';                     
+import ResetPasswordScreen from './screens/auth/ResetPassword/ResetPassword.screen'; 
 
 const Stack = createNativeStackNavigator();
 

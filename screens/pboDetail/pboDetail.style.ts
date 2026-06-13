@@ -1,0 +1,43 @@
+import { StyleSheet } from 'react-native';
+
+export const PRIMARY_BLUE = '#1A237E';
+
+export const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: '#F4F7F6' },
+  headerButton: { marginRight: 15, backgroundColor: 'rgba(255,255,255,0.2)', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 5, minWidth: 80, alignItems: 'center' },
+  headerButtonText: { color: 'white', fontWeight: 'bold', fontSize: 13 },
+  cardHeader: { backgroundColor: PRIMARY_BLUE, padding: 30, alignItems: 'center', borderBottomLeftRadius: 30, borderBottomRightRadius: 30 },
+  pboTitle: { color: 'white', fontSize: 22, fontWeight: 'bold', marginTop: 10 },
+  pboSubTitle: { color: '#E7F3F0', fontSize: 14 },
+  infoSection: { backgroundColor: 'white', marginHorizontal: 15, marginTop: 15, padding: 20, borderRadius: 15, elevation: 2 },
+  sectionTitle: { fontSize: 16, fontWeight: 'bold', color: '#333' },
+  row: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 15 },
+  infoBox: { width: '45%', alignItems: 'center' },
+  label: { fontSize: 12, color: '#666', marginBottom: 5 },
+  value: { fontSize: 24, fontWeight: 'bold' },
+  input: { borderBottomWidth: 2, borderBottomColor: PRIMARY_BLUE, fontSize: 22, fontWeight: 'bold', width: '60%', textAlign: 'center' },
+  progressContainer: { height: 8, backgroundColor: '#EEE', borderRadius: 4, marginTop: 20, overflow: 'hidden' },
+  progressBar: { height: '100%' },
+  detailItem: { flexDirection: 'row', alignItems: 'center', marginTop: 15 },
+  detailText: { marginLeft: 10, color: '#666', fontSize: 15 },
+  boldText: { color: '#000', fontWeight: '600' },
+  accordionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  badge: { backgroundColor: PRIMARY_BLUE, borderRadius: 10, paddingHorizontal: 8, paddingVertical: 2, marginLeft: 10 },
+  badgeText: { color: 'white', fontSize: 12, fontWeight: 'bold' },
+  clientsList: { marginTop: 15, borderTopWidth: 0.5, borderTopColor: '#eee', paddingTop: 10 },
+  clientItem: { flexDirection: 'row', alignItems: 'center', paddingVertical: 10, borderBottomWidth: 0.5, borderBottomColor: '#f0f0f0' },
+  portCircle: { width: 34, height: 34, borderRadius: 17, backgroundColor: '#E7F3F0', justifyContent: 'center', alignItems: 'center', marginRight: 12 },
+  portNumber: { color: PRIMARY_BLUE, fontWeight: 'bold', fontSize: 14 },
+  clientName: { fontSize: 15, color: '#333', fontWeight: '500' },
+  clientAbo: { fontSize: 12, color: '#999' },
+  noClientText: { textAlign: 'center', color: '#999', marginVertical: 20, fontStyle: 'italic' },
+  fab: { position: 'absolute', bottom: 30, right: 25, backgroundColor: PRIMARY_BLUE, width: 60, height: 60, borderRadius: 30, justifyContent: 'center', alignItems: 'center', elevation: 5 },
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', padding: 20 },
+  modalContent: { backgroundColor: 'white', borderRadius: 20, padding: 20 },
+  modalTitle: { fontSize: 18, fontWeight: 'bold', color: PRIMARY_BLUE, marginBottom: 15 },
+  modalInput: { borderBottomWidth: 1, borderBottomColor: '#ccc', marginBottom: 15, padding: 8 },
+  modalBtn: { padding: 12, borderRadius: 8, width: '45%', alignItems: 'center' },
+  saturationBadge: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FEE2E2', padding: 10, borderRadius: 10, marginTop: 15, borderWidth: 1, borderColor: '#EF4444' },
+  saturationText: { color: '#B91C1C', fontWeight: 'bold', fontSize: 12, marginLeft: 8 },
+  scrollSpacer: { height: 100 }
+});
